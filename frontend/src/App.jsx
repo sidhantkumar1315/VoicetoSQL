@@ -39,7 +39,21 @@ export default function App() {
   const [dark, setDark] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeNav, setActiveNav] = useState("chat");
+  const [showBanner, setShowBanner] = useState(
+    () => !sessionStorage.getItem("cold_start_dismissed")
+  );
   const bottomRef = useRef(null);
+
+  const dismissBanner = () => {
+    setShowBanner(false);
+    sessionStorage.setItem("cold_start_dismissed", "1");
+  };
+
+  useEffect(() => {
+    if (!showBanner) return;
+    const t = setTimeout(dismissBanner, 15000);
+    return () => clearTimeout(t);
+  }, [showBanner]);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
@@ -118,6 +132,19 @@ export default function App() {
       />
 
       <div className="main-area">
+        {/* Cold-start notice */}
+        {showBanner && (
+          <div className="cold-start-banner">
+            <span className="cold-start-icon">⏱</span>
+            <div className="cold-start-text">
+              <strong>Heads up:</strong> The first response may take up to 30 seconds — the backend
+              wakes up from sleep on Vercel's free tier. Subsequent queries will be instant.
+            </div>
+            <button className="cold-start-close" onClick={dismissBanner} aria-label="Dismiss">✕</button>
+            <div className="cold-start-progress" />
+          </div>
+        )}
+
         {/* Top bar */}
         <div className="topbar">
           <div className="topbar-left">
